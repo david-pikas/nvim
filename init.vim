@@ -2,6 +2,9 @@ set runtimepath^=~/.vim runtimepath+=~/.vim/after
 set runtimepath+=~/.local/share/nvim/site/autoload
 let &packpath = &runtimepath
 source ~/.vim/vimrc
+if has('win32') || has('win64')
+  nmap <C-z> <Nop>
+endif
 let g:UltiSnipsSnippetDirectories = ["~/.vim/UltiSnips/"]
 lua << EOF
   -- LSP stuff
@@ -43,6 +46,7 @@ lua << EOF
     nmap('[.', '<cmd>lua vim.lsp.diagnostic.goto_prev()<CR>')
     nmap('<leader>i', '<cmd>lua vim.lsp.diagnostic.show_line_diagnostics()<CR>')
     nmap('<leader>a', '<cmd>lua vim.lsp.buf.code_action()<CR>')
+    nmap('<leader>q', '<cmd>lua vim.lsp.diagnostic.set_qflist()<CR>')
   end
 
   for lang,opts in pairs(langs) do
