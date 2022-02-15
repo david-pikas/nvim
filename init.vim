@@ -16,7 +16,11 @@ lua << EOF
       }
     },
     clangd = {},
-    texlab = {},
+    texlab = {
+      settings = {
+        args = {"-pdf", "--shell-escape"}
+      }
+    },
     erlangls = {},
     eslint = {},
   }
@@ -41,7 +45,7 @@ lua << EOF
     nmap('=f', '<cmd>lua vim.lsp.buf.formatting()<CR>')
     nmap('].', '<cmd>lua vim.lsp.diagnostic.goto_next()<CR>')
     nmap('[.', '<cmd>lua vim.lsp.diagnostic.goto_prev()<CR>')
-    nmap('<leader>i', '<cmd>lua vim.lsp.diagnostic.show_line_diagnostics()<CR>')
+    nmap('<leader>i', '<cmd>lua vim.diagnostic.open_float(0, { scope = "line", padding="single" })<CR>')
     nmap('<leader>a', '<cmd>lua vim.lsp.buf.code_action()<CR>')
   end
 
@@ -53,7 +57,7 @@ lua << EOF
   -- tree sitter stuff
   require'nvim-treesitter.configs'.setup {
     ensure_installed = { "lua", "python", "javascript", "elixir",
-                         "cpp", "typescript", "regex", "rust" },
+                         "cpp", "typescript", "tsx", "regex", "rust" },
     highlight = { enable = true },
     indent =  { enable = true },
   }
