@@ -12,6 +12,8 @@ nnoremap  <leader>fh <cmd>Telescope help_tags<cr>
 nnoremap  <leader><C-F> yiw<cmd>Telescope live_grep<cr><C-R>"
 nnoremap  <leader>fb <cmd>Telescope buffers<cr>
 nnoremap  <leader>ft <cmd>Telescope treesitter<cr>
+nnoremap  <leader>fT <cmd>Telescope tags<cr>
+nnoremap  <leader>fp <cmd>Telescope registers<cr>
 nnoremap  <leader>fr <cmd>Telescope lsp_references<cr>
 nnoremap  <leader>fs <cmd>Telescope lsp_document_symbols<cr>
 nnoremap  <leader>fS <cmd>Telescope lsp_workspace_symbols<cr>
