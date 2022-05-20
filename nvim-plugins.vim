@@ -24,7 +24,5 @@ nnoremap  <leader>fo <cmd>Telescope jumplist<cr>
 Plug 'nvim-lua/plenary.nvim'
 " c-based fzf for ~20 times faster fuzzing
 Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
-" hoogle integration for tree sitter
-Plug 'luc-tielen/telescope_hoogle'
 " ultisnipps integration
 Plug 'fhill2/telescope-ultisnips.nvim'
