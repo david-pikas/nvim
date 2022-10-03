@@ -9,7 +9,7 @@ Plug 'nvim-telescope/telescope.nvim'
 nnoremap  <leader>ff <cmd>Telescope find_files<cr>
 nnoremap  <leader>fg <cmd>Telescope live_grep<cr>
 nnoremap  <leader>fh <cmd>Telescope help_tags<cr>
-nnoremap  <leader><C-F> yiw<cmd>Telescope live_grep<cr><C-R>"
+nnoremap  <leader><C-F> yiw<cmd>Telescope live_grep<cr><Esc>pi
 nnoremap  <leader>fb <cmd>Telescope buffers<cr>
 nnoremap  <leader>ft <cmd>Telescope treesitter<cr>
 nnoremap  <leader>fT <cmd>Telescope tags<cr>
@@ -22,9 +22,23 @@ nnoremap  <leader>f. <cmd>Telescope diagnostics<cr>
 nnoremap  <leader>f: <cmd>Telescope command_history<cr>
 nnoremap  <leader>fq <cmd>Telescope quickfix<cr>
 nnoremap  <leader>fo <cmd>Telescope jumplist<cr>
+nnoremap  <leader>hf <cmd>Telescope harpoon marks<cr>
 " lua library
 Plug 'nvim-lua/plenary.nvim'
 " c-based fzf for ~20 times faster fuzzing
 Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
 " ultisnipps integration
 Plug 'fhill2/telescope-ultisnips.nvim'
+" hoogle integration
+Plug 'luc-tielen/telescope_hoogle'
+" harpoon (file quick menu)
+Plug 'ThePrimeagen/harpoon'
+nnoremap <leader>m <cmd>lua require("harpoon.mark").add_file()<cr>
+nnoremap <leader>hr <cmd>lua require("harpoon.ui").toggle_quick_menu()<cr>
+for i in range(1,9)
+  execute "nnoremap '".i.' <cmd>lua require("harpoon.ui").nav_file('.i.')<cr>'
+endfor
+nnoremap <leader>hr <cmd>lua require("harpoon.ui").toggle_quick_menu()<cr>
+" nnoremap <expr> <tab> '<cmd>lua require("harpoon.ui").nav_file('.v:count1.')<cr>'
+" treesitter-based text objects
+Plug 'nvim-treesitter/nvim-treesitter-textobjects'
