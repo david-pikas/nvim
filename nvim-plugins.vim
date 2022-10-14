@@ -13,6 +13,7 @@ nnoremap  <leader><C-F> yiw<cmd>Telescope live_grep<cr><Esc>pi
 nnoremap  <leader>fb <cmd>Telescope buffers<cr>
 nnoremap  <leader>ft <cmd>Telescope treesitter<cr>
 nnoremap  <leader>fT <cmd>Telescope tags<cr>
+nnoremap  <leader>f<C-T> <cmd>Telescope tagstack<cr>
 nnoremap  <leader>fp <cmd>Telescope registers<cr>
 nnoremap  <leader>fr <cmd>Telescope lsp_references<cr>
 nnoremap  <leader>fs <cmd>Telescope lsp_document_symbols<cr>
@@ -23,10 +24,12 @@ nnoremap  <leader>f: <cmd>Telescope command_history<cr>
 nnoremap  <leader>fq <cmd>Telescope quickfix<cr>
 nnoremap  <leader>fo <cmd>Telescope jumplist<cr>
 nnoremap  <leader>hf <cmd>Telescope harpoon marks<cr>
+nnoremap  <leader>:  <cmd>Telescope commands<cr>
+nnoremap  <leader>f: <cmd>Telescope command_history<cr>
 " lua library
 Plug 'nvim-lua/plenary.nvim'
 " c-based fzf for ~20 times faster fuzzing
-Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
+Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' }
 " ultisnipps integration
 Plug 'fhill2/telescope-ultisnips.nvim'
 " hoogle integration

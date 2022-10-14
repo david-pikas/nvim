@@ -13,6 +13,76 @@ if exists('g:neovide')
   let g:neovide_transparency=0.8
 endif
 let g:UltiSnipsSnippetDirectories = ["~/.vim/UltiSnips/"]
+
+" remove how to disable menu item
+unmenu PopUp.How-to\ disable\ mouse
+" add (tag based) go to definition
+menu PopUp.Go\ to\ &definition <C-]>
+
+function LspMenu()
+  if luaeval('0 < #vim.lsp.buf_get_clients()')
+    " add (lsp based) show definition
+    noremenu PopUp.Show\ &information <cmd>lua vim.lsp.buf.hover()<cr>
+    " add (lsp based) find references
+    noremenu PopUp.Find\ &references <cmd>lua vim.lsp.buf.references()<cr>
+    " add (treesitter+lsp based) peek function
+    noremenu PopUp.&Peek\ function\ definition <cmd>lua require('nvim-treesitter.textobjects.lsp_interop').peek_definition_code('@function.outer')<cr>
+    " add (treesitter+lsp based) peek class
+    noremenu PopUp.Peek\ class\ definition <cmd>lua require('nvim-treesitter.textobjects.lsp_interop').peek_definition_code('@class.outer')<cr>
+  elseif 0 < len(menu_get('PopUp')[0].submenus->filter('get(v:val, "name") == "Show information"'))
+    " remove the menus
+    unmenu PopUp.Show\ &information
+    unmenu PopUp.Find\ &references
+    unmenu PopUp.&Peek\ function\ definition
+    unmenu PopUp.Peek\ class\ definition
+  endif
+endfunction
+
+function DebugMenuEnable()
+  noremenu PopUp.Set\ breakpoint :Break
+  noremenu PopUp.Clear\ breakpoint :Clear
+  noremenu PopUp.Evaluate :Evaluate
+  noremenu PopUp.-2- <Nop>
+endfunction
+
+function DebugMenuDisable()
+  if 0 < len(menu_get('PopUp')[0].submenus->filter('get(v:val, "name") == "Set breakpoint"'))
+    unmenu PopUp.Set\ breakpoint
+    unmenu PopUp.Clear\ breakpoint
+    unmenu PopUp.Evaluate
+    unmenu PopUp.-2-
+endif
+endfunction
+
+augroup debug_menu
+  autocmd!
+  autocmd User TermdebugStartPre call DebugMenuEnable()
+  autocmd User TermdebugStopPost call DebugMenuDisable()
+augroup END
+
+augroup lsp
+  autocmd!
+  " set/unset tagfunc to lsp
+  autocmd LspAttach * set tagfunc=v:lua.vim.lsp.tagfunc
+  autocmd LspDetach * set tagfunc=
+  " add lsp menu items
+  autocmd BufEnter,LspAttach,LspDetach * call LspMenu()
+augroup END
+
+"redefinition of command in vimrc
+command! -bang CoworkerMode call NvimCoworkerMode(<bang>1)
+
+function NvimCoworkerMode(enable)
+  " defined in vimrc
+  call CoworkerMode(a:enable)
+  augroup nvim_coworker_mode
+    autocmd!
+    if a:enable
+      autocmd CursorHold * lua vim.lsp.buf.hover()
+    endif
+  augroup END
+endfunction
+
 lua << EOF
   -- LSP stuff
   local nvim_lsp = require('lspconfig')
@@ -33,7 +103,8 @@ lua << EOF
     },
     erlangls = {},
     eslint = {},
-    pylsp = {}
+    pylsp = {},
+    solargraph = {}
   }
 
   local custom_attach = function(client, bufnr_)
@@ -46,6 +117,11 @@ lua << EOF
       vim.api.nvim_buf_set_option(bufnr_, opt, val)
     end
     set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
+    nmap('gd', vim.lsp.buf.definition)
+    nmap('gd', vim.lsp.buf.definition)
+    nmap('gd', vim.lsp.buf.definition)
+    nmap('gd', vim.lsp.buf.definition)
+    nmap('gd', vim.lsp.buf.definition)
     nmap('gd', vim.lsp.buf.definition)
     nmap('gD', vim.lsp.buf.type_definition)
     nmap('gr', vim.lsp.buf.references)
@@ -69,12 +145,16 @@ lua << EOF
   -- tree sitter stuff
   require'nvim-treesitter.configs'.setup {
     ensure_installed = { "lua", "python", "javascript", "elixir", "haskell",
-                         "cpp", "typescript", "tsx", "regex", "rust" },
+                         "c", "cpp", "typescript", "tsx", "regex", "ruby", "rust" },
     highlight = { enable = true },
-    indent = { enable = true },
+    indent = {
+       enable = true,
+       disable = { "c", "cpp" }
+    },
     textobjects = {
       select = {
         enable = true,
+        lookahead = true,
         keymaps = {
           ["af"] = "@function.outer",
           ["if"] = "@function.inner",
@@ -87,7 +167,32 @@ lua << EOF
         },
         include_surrounding_whitespace = true,
       },
-    },
+      move = {
+        enable = true,
+        set_jumps = true,
+        goto_next_start = {
+          ["]]"] = "@function.outer"
+        },
+        goto_next_end = {
+          ["]["] = "@function.outer"
+        },
+        goto_previous_start = {
+          ["[["] = "@function.outer"
+        },
+        goto_previous_end = {
+          ["[]"] = "@function.outer"
+        }
+      },
+      lsp_interop = {
+        enable = true,
+        peek_definition_code = {
+          ["<leader>pf"] = "@function.outer",
+          ["<leader>pc"] = "@class.outer",
+          ["<leader>ps"] = "@statement.outer",
+          ["<leader>pp"] = "@paramater.outer"
+        }
+      }
+    }
   }
 
   -- telescope stuff
