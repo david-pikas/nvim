@@ -14,12 +14,24 @@ if exists('g:neovide')
 endif
 let g:UltiSnipsSnippetDirectories = ["~/.vim/UltiSnips/"]
 
-" remove how to disable menu item
-unmenu PopUp.How-to\ disable\ mouse
+nnoremap [<C-I> :TSTextobjectGotoPreviousStart @
+vnoremap [<C-I> :TSTextobjectGotoPreviousStart @
+
+nnoremap ]<C-I> :TSTextobjectGotoNextEnd @
+vnoremap ]<C-I> :TSTextobjectGotoNextEnd @
+
+function! PopUpMenuExists(name)
+    return 0 < len(menu_get('PopUp')[0].submenus->filter({i,v -> get(v, "name") == a:name}))
+endfunc
+
+if PopUpMenuExists("How-to disable mouse")
+    " remove how to disable menu item
+    unmenu PopUp.How-to\ disable\ mouse
+endif
 " add (tag based) go to definition
 menu PopUp.Go\ to\ &definition <C-]>
 
-function LspMenu()
+function! LspMenu()
   if luaeval('0 < #vim.lsp.buf_get_clients()')
     " add (lsp based) show definition
     noremenu PopUp.Show\ &information <cmd>lua vim.lsp.buf.hover()<cr>
@@ -29,24 +41,24 @@ function LspMenu()
     noremenu PopUp.&Peek\ function\ definition <cmd>lua require('nvim-treesitter.textobjects.lsp_interop').peek_definition_code('@function.outer')<cr>
     " add (treesitter+lsp based) peek class
     noremenu PopUp.Peek\ class\ definition <cmd>lua require('nvim-treesitter.textobjects.lsp_interop').peek_definition_code('@class.outer')<cr>
-  elseif 0 < len(menu_get('PopUp')[0].submenus->filter('get(v:val, "name") == "Show information"'))
+  elseif PopUpMenuExists("Show information")
     " remove the menus
     unmenu PopUp.Show\ &information
     unmenu PopUp.Find\ &references
     unmenu PopUp.&Peek\ function\ definition
     unmenu PopUp.Peek\ class\ definition
-  endif
+endif
 endfunction
 
-function DebugMenuEnable()
+function! DebugMenuEnable()
   noremenu PopUp.Set\ breakpoint :Break
   noremenu PopUp.Clear\ breakpoint :Clear
   noremenu PopUp.Evaluate :Evaluate
   noremenu PopUp.-2- <Nop>
 endfunction
 
-function DebugMenuDisable()
-  if 0 < len(menu_get('PopUp')[0].submenus->filter('get(v:val, "name") == "Set breakpoint"'))
+function! DebugMenuDisable()
+  if PopUpMenuExists("Set breakpoint")
     unmenu PopUp.Set\ breakpoint
     unmenu PopUp.Clear\ breakpoint
     unmenu PopUp.Evaluate
@@ -72,15 +84,15 @@ augroup END
 "redefinition of command in vimrc
 command! -bang CoworkerMode call NvimCoworkerMode(<bang>1)
 
-function NvimCoworkerMode(enable)
+function! NvimCoworkerMode(enable)
   " defined in vimrc
   call CoworkerMode(a:enable)
-  augroup nvim_coworker_mode
-    autocmd!
-    if a:enable
-      autocmd CursorHold * lua vim.lsp.buf.hover()
-    endif
-  augroup END
+  " augroup nvim_coworker_mode
+  "   autocmd!
+  "   if a:enable
+  "     autocmd CursorHold * lua vim.lsp.buf.hover()
+  "   endif
+  " augroup END
 endfunction
 
 lua << EOF
@@ -104,8 +116,39 @@ lua << EOF
     erlangls = {},
     eslint = {},
     pylsp = {},
-    solargraph = {}
+    solargraph = {},
+    cmake = {},
   }
+
+  -- debugger stuff
+  local dap = require('dap')
+  dap.adapters.cppdbg = {
+    id = 'cppdbg',
+    type = 'executable',
+    command = vim.g.cppdbg_command,
+    options = {
+      detached = false
+    },
+  }
+  dap.configurations.cpp = {
+    {
+      name = 'Launch',
+      type = 'cppdbg',
+      request = 'launch',
+      program = function()
+        if vim.g.cppdbg_program_exe then
+          return vim.g.cppdbg_program_exe
+        else
+          return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+        end
+      end,
+      cwd = '${workspaceFolder}',
+      stopOnEntry = false,
+      args = {},
+      MIMode = 'lldb',
+    },
+  }
+  vim.g.dap_configs = dap.configurations
 
   local custom_attach = function(client, bufnr_)
     bufnr = 0
@@ -144,8 +187,20 @@ lua << EOF
 
   -- tree sitter stuff
   require'nvim-treesitter.configs'.setup {
-    ensure_installed = { "lua", "python", "javascript", "elixir", "haskell",
-                         "c", "cpp", "typescript", "tsx", "regex", "ruby", "rust" },
+    ensure_installed = {
+      "c",
+      "cpp",
+      "elixir",
+      "haskell",
+      "javascript",
+      "lua",
+      "python",
+      "regex",
+      "ruby",
+      "rust",
+      "tsx",
+      "typescript",
+    },
     highlight = { enable = true },
     indent = {
        enable = true,
@@ -171,16 +226,20 @@ lua << EOF
         enable = true,
         set_jumps = true,
         goto_next_start = {
-          ["]]"] = "@function.outer"
+          ["]["] = "@function.outer",
+          ["]m"] = "@class.outer",
         },
         goto_next_end = {
-          ["]["] = "@function.outer"
+          ["]]"] = "@function.outer",
+          ["]M"] = "@class.outer",
         },
         goto_previous_start = {
-          ["[["] = "@function.outer"
+          ["[["] = "@function.outer",
+          ["[m"] = "@class.outer",
         },
         goto_previous_end = {
-          ["[]"] = "@function.outer"
+          ["[]"] = "@function.outer",
+          ["[M"] = "@class.outer",
         }
       },
       lsp_interop = {
@@ -210,6 +269,11 @@ lua << EOF
         },
       },
     },
+    extensions = {
+      live_grep_args = {
+        auto_quoting = true
+      }
+    }
   })
   telescope.load_extension('fzf')
   telescope.load_extension('ultisnips')

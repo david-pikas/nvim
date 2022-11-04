@@ -1,3 +1,5 @@
+" floating preview window
+Plug 'ncm2/float-preview.nvim'
 " LSP
 Plug 'neovim/nvim-lspconfig'
 " tree sitter
@@ -7,7 +9,6 @@ Plug 'glacambre/firenvim', { 'do': { _ -> firenvim#install(0) } }
 " fuzzy moving around
 Plug 'nvim-telescope/telescope.nvim'
 nnoremap  <leader>ff <cmd>Telescope find_files<cr>
-nnoremap  <leader>fg <cmd>Telescope live_grep<cr>
 nnoremap  <leader>fh <cmd>Telescope help_tags<cr>
 nnoremap  <leader><C-F> yiw<cmd>Telescope live_grep<cr><Esc>pi
 nnoremap  <leader>fb <cmd>Telescope buffers<cr>
@@ -26,6 +27,10 @@ nnoremap  <leader>fo <cmd>Telescope jumplist<cr>
 nnoremap  <leader>hf <cmd>Telescope harpoon marks<cr>
 nnoremap  <leader>:  <cmd>Telescope commands<cr>
 nnoremap  <leader>f: <cmd>Telescope command_history<cr>
+" for passing comand line options to ripgrep
+Plug 'nvim-telescope/telescope-live-grep-args.nvim'
+" missing Telescope subcommand
+nnoremap  <leader>fg <cmd>lua require("telescope").extensions.live_grep_args.live_grep_args()<cr>
 " lua library
 Plug 'nvim-lua/plenary.nvim'
 " c-based fzf for ~20 times faster fuzzing
@@ -45,3 +50,20 @@ nnoremap <leader>hr <cmd>lua require("harpoon.ui").toggle_quick_menu()<cr>
 " nnoremap <expr> <tab> '<cmd>lua require("harpoon.ui").nav_file('.v:count1.')<cr>'
 " treesitter-based text objects
 Plug 'nvim-treesitter/nvim-treesitter-textobjects'
+" debugger pluggin
+Plug 'mfussenegger/nvim-dap'
+function! Lua_methodify(arg_string) 
+  let args = a:arg_string->split(' ')
+  let name = args[0]
+  let params = args[1:]
+  return ".".name.'('.a:000->join(', ').')'
+endfunction
+command! -nargs=+ Dap execute "lua require('dap')".Lua_methodify("<args>")
+nnoremap <silent> <M-d>c <cmd>lua require'dap'.continue()<cr>
+nnoremap <silent> <M-d>n <cmd>lua require'dap'.step_over()<cr>
+nnoremap <silent> <M-d>i <cmd>lua require'dap'.step_into()<cr>
+nnoremap <silent> <M-d>o <cmd>lua require'dap'.step_out()<cr>
+nnoremap <silent> <M-d>b <cmd>lua require'dap'.toggle_breakpoint()<cr>
+nnoremap <silent> <M-d>B <cmd>lua require'dap'.set_breakpoint(vim.fn.input('Breakpoint condition: '))<cr>
+nnoremap <silent> <M-d>q <cmd>lua require'dap'.list_breakpoints(vim.fn.input('Breakpoint condition: '))<cr>
+nnoremap <silent> <M-d>r <cmd>lua require'dap'.repl.open()<cr>
