@@ -4,6 +4,8 @@ Plug 'ncm2/float-preview.nvim'
 Plug 'neovim/nvim-lspconfig'
 " tree sitter
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+" viewing tree sitter information
+Plug 'nvim-treesitter/playground'
 " firefox integration
 Plug 'glacambre/firenvim', { 'do': { _ -> firenvim#install(0) } }
 " fuzzy moving around
