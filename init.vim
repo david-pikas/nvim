@@ -10,7 +10,9 @@ endif
 " neovide
 if exists('g:neovide')
   set guifont=Fira\ Code:h8
-  let g:neovide_transparency=0.8
+  if !exists('g:neovide_transparency')
+    let g:neovide_transparency=0.8
+  endif
 endif
 let g:UltiSnipsSnippetDirectories = ["~/.vim/UltiSnips/"]
 
@@ -251,6 +253,37 @@ lua << EOF
     nvim_lsp[lang].setup { on_attach = custom_attach }
   end
 
+  require 'symbols-outline'.setup {
+    symbols = {
+      File = {icon = "file:", hl = "TSURI"},
+      Module = {icon = "module:", hl = "TSNamespace"},
+      Namespace = {icon = "namespace:", hl = "TSNamespace"},
+      Package = {icon = "package:", hl = "TSNamespace"},
+      Class = {icon = "class:", hl = "TSType"},
+      Method = {icon = "method:", hl = "TSMethod"},
+      Property = {icon = "property:", hl = "TSMethod"},
+      Field = {icon = "field:", hl = "TSField"},
+      Constructor = {icon = "constructor:", hl = "TSConstructor"},
+      Enum = {icon = "enum:", hl = "TSType"},
+      Interface = {icon = "interface:", hl = "TSType"},
+      Function = {icon = "function:", hl = "TSFunction"},
+      Variable = {icon = "variable:", hl = "TSConstant"},
+      Constant = {icon = "constant:", hl = "TSConstant"},
+      String = {icon = "string:", hl = "TSString"},
+      Number = {icon = "number:", hl = "TSNumber"},
+      Boolean = {icon = "bool:", hl = "TSBoolean"},
+      Array = {icon = "array:", hl = "TSConstant"},
+      Object = {icon = "object:", hl = "TSType"},
+      Key = {icon = "key:", hl = "TSType"},
+      Null = {icon = "NULL:", hl = "TSType"},
+      EnumMember = {icon = "enum_member:", hl = "TSField"},
+      Struct = {icon = "struct:", hl = "TSType"},
+      Event = {icon = "event:", hl = "TSType"},
+      Operator = {icon = "operator:", hl = "TSOperator"},
+      TypeParameter = {icon = "type_param:", hl = "TSParameter"}
+    }
+  }
+
   -- tree sitter stuff
   require'nvim-treesitter.configs'.setup {
     ensure_installed = {
@@ -259,6 +292,8 @@ lua << EOF
       "elixir",
       "haskell",
       "javascript",
+      "json",
+      "latex",
       "lua",
       "python",
       "regex",
@@ -269,6 +304,7 @@ lua << EOF
       "query",
     },
     highlight = { enable = true },
+    incremental_selection = { enable = true },
     indent = {
        enable = true,
        disable = { "c", "cpp" }
@@ -293,11 +329,11 @@ lua << EOF
         enable = true,
         set_jumps = true,
         goto_next_start = {
-          ["]["] = "@function.outer",
+          ["]]"] = "@function.outer",
           ["]m"] = "@class.outer",
         },
         goto_next_end = {
-          ["]]"] = "@function.outer",
+          ["]["] = "@function.outer",
           ["]M"] = "@class.outer",
         },
         goto_previous_start = {
@@ -419,7 +455,21 @@ lua << EOF
   end
 
   local function treesitter_grep(args)
-    local querystr = args.args
+    local fullstr = args.args;
+    local regex
+    local regex_start, regex_end = string.find(fullstr, "/.*[^\\]/")
+    if regex_start and regex_end then
+      regex = string.sub(fullstr, regex_start+1, regex_end-1)
+      fullstr = string.sub(fullstr, 0, regex_start-1) .. string.sub(fullstr, regex_end+1)
+    end
+    local querystr
+    local querystr_start, querystr_end = string.find(fullstr, "%b()[@%w%d]*")
+    if querystr_start and querystr_end then
+      querystr = string.sub(fullstr, querystr_start, querystr_end)
+      fullstr = string.sub(fullstr, 0, querystr_start-1) .. string.sub(fullstr, querystr_end+1)
+    else
+      error "Failure parsing treesitter grep: Couldn't find treesitteer query"
+    end
     if not string.find(querystr, "@match%f[%A]") then
         querystr = querystr.." @match"
     end
@@ -428,14 +478,20 @@ lua << EOF
       function(captures, mark_ns, emark1, emark2)
         local el1, ec1 = unpack(vim.api.nvim_buf_get_extmark_by_id(0, mark_ns, emark1, {}))
         local el2, ec2 = unpack(vim.api.nvim_buf_get_extmark_by_id(0, mark_ns, emark2, {}))
-        table.insert(matches, {
-            filename = vim.fn.expand('%'),
-            lnum = el1+1,
-            end_lnum = el2+1,
-            col = ec1,
-            end_col = ec2,
-            text = vim.fn.getline(el1+1),
-        })
+        local lines = vim.fn.getline(el1+1, el2+1)
+        lines[1] = string.sub(lines[1], ec1)
+        lines[#lines] = string.sub(lines[#lines], 0, ec2+1)
+        local text = vim.fn.join(lines, "\n")
+        if not regex or vim.fn.match(text, regex) > -1 then
+          table.insert(matches, {
+              filename = vim.fn.expand('%'),
+              lnum = el1+1,
+              end_lnum = el2+1,
+              col = ec1,
+              end_col = ec2,
+              text = text,
+          })
+        end
       end
     )
     vim.fn.setqflist(matches)
@@ -443,8 +499,12 @@ lua << EOF
   end
 
   vim.api.nvim_create_user_command("TSGlobal", treesitter_ex,  { range='%', nargs=1 })
+  vim.api.nvim_create_user_command("TSG", treesitter_ex,  { range='%', nargs=1 })
   vim.api.nvim_create_user_command("TSSubstitute", treesitter_sub, { range='%', nargs=1 })
   vim.api.nvim_create_user_command("TSGrep", treesitter_grep, { range='%', nargs=1 })
+
+  -- refactoring stuff
+  require('refactoring').setup({})
 
   -- telescope stuff
   telescope = require('telescope')
@@ -471,5 +531,6 @@ lua << EOF
   telescope.load_extension('ultisnips')
   telescope.load_extension('hoogle')
   telescope.load_extension('harpoon')
+  telescope.load_extension('refactoring')
 
 EOF
