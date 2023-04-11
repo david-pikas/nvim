@@ -1,6 +1,7 @@
 " nvim plugin file: ~/.config/nvim/nvim-plugins.vim
 set runtimepath^=~/.vim runtimepath+=~/.vim/after
 set runtimepath+=~/.local/share/nvim/site/autoload
+set runtimepath-=C:/Program\ Files\ (x86)/nvim/share/nvim
 let &packpath = &runtimepath
 source ~/.vim/vimrc
 " keep nvim from hanging on C-z on windows
@@ -240,7 +241,7 @@ lua << EOF
     map('v', 'K', vim.lsp.buf.hover)
     nmap('K',  vim.lsp.buf.hover)
     nmap('ga', vim.lsp.buf.code_action)
-    nmap('=f', vim.lsp.buf.formatting)
+    nmap('=f', vim.lsp.buf.format)
     nmap('].', vim.diagnostic.goto_next)
     nmap('[.', vim.diagnostic.goto_prev)
     nmap('<leader>i', function () vim.diagnostic.open_float(0, { scope = "line", padding="single" }) end)
@@ -502,6 +503,16 @@ lua << EOF
   vim.api.nvim_create_user_command("TSG", treesitter_ex,  { range='%', nargs=1 })
   vim.api.nvim_create_user_command("TSSubstitute", treesitter_sub, { range='%', nargs=1 })
   vim.api.nvim_create_user_command("TSGrep", treesitter_grep, { range='%', nargs=1 })
+
+  -- preview code lsp actions
+  local actions_preview = require('actions-preview')
+  actions_preview.setup {
+    backend = { 'telescope', 'nui' },
+    telescope = require('telescope.themes').get_dropdown { winblend = 10 },
+  }
+  vim.api.nvim_create_user_command(
+    'ActionsPreview', function() actions_preview.code_actions() end, { range='%', nargs=0 }
+  )
 
   -- refactoring stuff
   require('refactoring').setup({})

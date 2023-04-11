@@ -1,5 +1,3 @@
-" floating preview window
-Plug 'ncm2/float-preview.nvim'
 " LSP
 Plug 'neovim/nvim-lspconfig'
 " tree sitter
@@ -73,3 +71,12 @@ nnoremap <silent> <M-d>r <cmd>lua require'dap'.repl.open()<cr>
 Plug 'simrat39/symbols-outline.nvim'
 " refactoring
 Plug 'ThePrimeagen/refactoring.nvim'
+command! -range RefactoringExtractFunction lua require('refactoring').refactor('Extract Function')
+command! -range RefactoringExtractFunctionToFile lua require('refactoring').refactor('Extract Function To File')
+command! -range RefactoringExtractVariable lua require('refactoring').refactor('Extract Variable')
+command! -range RefactoringInlineVariable lua require('refactoring').refactor('Inline Variable')
+command! -range RefactoringExtractBlock lua require('refactoring').refactor('Extract Block')
+command! -range RefactoringExtractBlockToFile lua require('refactoring').refactor('Extract Block To File')
+" dependency for preview actions
+Plug 'aznhe21/actions-preview.nvim'
+nnoremap  <leader>fd  <cmd>lua require('actions-preview').code_actions()<cr>
