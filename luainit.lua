@@ -113,37 +113,6 @@ nvim_lsp[lang].setup(opts)
 nvim_lsp[lang].setup { on_attach = custom_attach }
 end
 
-require 'symbols-outline'.setup {
-symbols = {
-  File = {icon = "file:", hl = "TSURI"},
-  Module = {icon = "module:", hl = "TSNamespace"},
-  Namespace = {icon = "namespace:", hl = "TSNamespace"},
-  Package = {icon = "package:", hl = "TSNamespace"},
-  Class = {icon = "class:", hl = "TSType"},
-  Method = {icon = "method:", hl = "TSMethod"},
-  Property = {icon = "property:", hl = "TSMethod"},
-  Field = {icon = "field:", hl = "TSField"},
-  Constructor = {icon = "constructor:", hl = "TSConstructor"},
-  Enum = {icon = "enum:", hl = "TSType"},
-  Interface = {icon = "interface:", hl = "TSType"},
-  Function = {icon = "function:", hl = "TSFunction"},
-  Variable = {icon = "variable:", hl = "TSConstant"},
-  Constant = {icon = "constant:", hl = "TSConstant"},
-  String = {icon = "string:", hl = "TSString"},
-  Number = {icon = "number:", hl = "TSNumber"},
-  Boolean = {icon = "bool:", hl = "TSBoolean"},
-  Array = {icon = "array:", hl = "TSConstant"},
-  Object = {icon = "object:", hl = "TSType"},
-  Key = {icon = "key:", hl = "TSType"},
-  Null = {icon = "NULL:", hl = "TSType"},
-  EnumMember = {icon = "enum_member:", hl = "TSField"},
-  Struct = {icon = "struct:", hl = "TSType"},
-  Event = {icon = "event:", hl = "TSType"},
-  Operator = {icon = "operator:", hl = "TSOperator"},
-  TypeParameter = {icon = "type_param:", hl = "TSParameter"}
-}
-}
-
 -- tree sitter stuff
 require'nvim-treesitter.configs'.setup {
 ensure_installed = {

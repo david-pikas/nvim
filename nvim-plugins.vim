@@ -67,8 +67,6 @@ nnoremap <silent> <M-d>b <cmd>lua require'dap'.toggle_breakpoint()<cr>
 nnoremap <silent> <M-d>B <cmd>lua require'dap'.set_breakpoint(vim.fn.input('Breakpoint condition: '))<cr>
 nnoremap <silent> <M-d>q <cmd>lua require'dap'.list_breakpoints(vim.fn.input('Breakpoint condition: '))<cr>
 nnoremap <silent> <M-d>r <cmd>lua require'dap'.repl.open()<cr>
-" lsp symbol outline
-Plug 'simrat39/symbols-outline.nvim'
 " refactoring
 Plug 'ThePrimeagen/refactoring.nvim'
 command! -range RefactoringExtractFunction lua require('refactoring').refactor('Extract Function')
