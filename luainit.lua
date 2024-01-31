@@ -2,26 +2,26 @@
 local nvim_lsp = require('lspconfig')
 local lsp_util = require('lspconfig.util')
 local langs = {
-hls = {},
-rust_analyzer = {
-  settings = {
-    ["rust-analyzer"] = {
-      procMacro = { enable = false }
+  hls = {},
+  rust_analyzer = {
+    settings = {
+      ["rust-analyzer"] = {
+        procMacro = { enable = false }
+      }
     }
-  }
-},
-clangd = {},
-texlab = {
-  settings = {
-    args = {"-pdf", "--shell-escape"}
-  }
-},
-erlangls = {},
-eslint = {},
-pylsp = {},
-solargraph = { root_dir = lsp_util.root_pattern("Gemfile", ".git", ".svn", ".solargraph.yml") },
--- ruby_ls = { root_dir = lsp_util.root_pattern("Gemfile", ".git", ".svn") },
-cmake = {},
+  },
+  clangd = {},
+  texlab = {
+    settings = {
+      args = {"-pdf", "--shell-escape"}
+    }
+  },
+  erlangls = {},
+  eslint = {},
+  pylsp = {},
+  solargraph = { root_dir = lsp_util.root_pattern("Gemfile", ".git", ".svn", ".solargraph.yml") },
+  -- ruby_ls = { root_dir = lsp_util.root_pattern("Gemfile", ".git", ".svn") },
+  cmake = {},
 }
 
 -- debugger stuff
@@ -228,143 +228,143 @@ textobjects = {
 
 local function treesitter_do(querystr, line1, line2, callback)
 
-local mark_ns = vim.api.nvim_create_namespace('ts-ex')
-local lang_tree = vim.treesitter.get_parser(0)
+  local mark_ns = vim.api.nvim_create_namespace('ts-ex')
+  local lang_tree = vim.treesitter.get_parser(0)
 
-local query = vim.treesitter.parse_query(lang_tree:lang(), querystr)
+  local query = vim.treesitter.parse_query(lang_tree:lang(), querystr)
 
-for _, tree in ipairs(lang_tree:trees()) do
-  local emarks = {}
-  local captures = {}
-  for _, match, metadata in query:iter_matches(tree:root(), bufnr, line1, line2) do
-    local ml1, mc1, ml2, mc2
-    for id, node in pairs(match) do
-      local name = query.captures[id]
-      local l1, c1, l2, c2 = node:range()
-      if name == "match" then
-        ml1, mc1, ml2, mc2 = l1, c1, l2, c2
+  for _, tree in ipairs(lang_tree:trees()) do
+    local emarks = {}
+    local captures = {}
+    for _, match, metadata in query:iter_matches(tree:root(), bufnr, line1, line2) do
+      local ml1, mc1, ml2, mc2
+      for id, node in pairs(match) do
+        local name = query.captures[id]
+        local l1, c1, l2, c2 = node:range()
+        if name == "match" then
+          ml1, mc1, ml2, mc2 = l1, c1, l2, c2
+        end
+        -- replace the @name with the text captured by the query in cmd
+        captures[name] = {
+          l1, c1, l2, c2
+        }
       end
-      -- replace the @name with the text captured by the query in cmd
-      captures[name] = {
-        l1, c1, l2, c2
-      }
+      if ml1 ~= nil then
+        local emark1 = vim.api.nvim_buf_set_extmark(0, mark_ns, ml1, mc1, {})
+        local emark2 = vim.api.nvim_buf_set_extmark(0, mark_ns, ml2, mc2, {})
+        table.insert(emarks, {emark1, emark2})
+      end
     end
-    if ml1 ~= nil then
-      local emark1 = vim.api.nvim_buf_set_extmark(0, mark_ns, ml1, mc1, {})
-      local emark2 = vim.api.nvim_buf_set_extmark(0, mark_ns, ml2, mc2, {})
-      table.insert(emarks, {emark1, emark2})
-    end
-  end
-  for _,emarks in pairs(emarks) do
-    local emark1, emark2 = unpack(emarks)
-    -- if the marks are equal that means that the region between them has been deleted
-    local el1, ec1 = unpack(vim.api.nvim_buf_get_extmark_by_id(0, mark_ns, emark1, {}))
-    local el2, ec2 = unpack(vim.api.nvim_buf_get_extmark_by_id(0, mark_ns, emark2, {}))
-    if el1 ~= el2 or ec1 ~= ec2 then
-      callback(captures, mark_ns, emark1, emark2)
+    for _,emarks in pairs(emarks) do
+      local emark1, emark2 = unpack(emarks)
+      -- i f the marks are equal that means that the region between them has been deleted
+      local el1, ec1 = unpack(vim.api.nvim_buf_get_extmark_by_id(0, mark_ns, emark1, {}))
+      local el2, ec2 = unpack(vim.api.nvim_buf_get_extmark_by_id(0, mark_ns, emark2, {}))
+      if el1 ~= el2 or ec1 ~= ec2 then
+        callback(captures, mark_ns, emark1, emark2)
+      end
     end
   end
-end
 end
 
 local function sub_captures(s, captures)
-for name, range in pairs(captures) do
-  local l1, c1, l2, c2 = unpack(range)
-  local lines = vim.fn.getline(l1+1, l2+1)
-  lines[1] = string.sub(lines[1], c1+1)
-  lines[#lines] = string.sub(lines[#lines], 0, c2)
-  if string.find(s, "@"..name.."%f[%A]") then
-      s = string.gsub(s, "@"..name.."%f[%A]", table.concat(lines, "\n"))
+  for name, range in pairs(captures) do
+    local l1, c1, l2, c2 = unpack(range)
+    local lines = vim.fn.getline(l1+1, l2+1)
+    lines[1] = string.sub(lines[1], c1+1)
+    lines[#lines] = string.sub(lines[#lines], 0, c2)
+    if string.find(s, "@"..name.."%f[%A]") then
+        s = string.gsub(s, "@"..name.."%f[%A]", table.concat(lines, "\n"))
+    end
   end
-end
-return s
+  return s
 end
 
 -- perform ex commands on results of treesitter queries
 local function treesitter_ex(args)
-local _, _, querystr, cmd = string.find(args.args, "([^/]+)/(.*)")
-if not string.find(querystr, "@match%f[%A]") then
-    querystr = querystr.." @match"
-end
-treesitter_do(querystr, args.line1, args.line2,
-  function(captures, mark_ns, emark1, emark2)
-    local localcmd = sub_captures(cmd, captures)
-    vim.fn.ExtmarkSplitEx(mark_ns, emark1, emark2, localcmd)
+  local _, _, querystr, cmd = string.find(args.args, "([^/]+)/(.*)")
+  if not string.find(querystr, "@match%f[%A]") then
+      querystr = querystr.." @match"
   end
-)
+  treesitter_do(querystr, args.line1, args.line2,
+    function(captures, mark_ns, emark1, emark2)
+      local localcmd = sub_captures(cmd, captures)
+      vim.fn.ExtmarkSplitEx(mark_ns, emark1, emark2, localcmd)
+    end
+  )
 end
 
 local function treesitter_sub(args)
-local _, _, querystr, sub = string.find(args.args, "([^/]+)/(.*)")
-if not string.find(querystr, "@match%f[%A]") then
-    querystr = querystr.." @match"
-end
-treesitter_do(querystr, args.line1, args.line2,
-  function(captures, mark_ns, emark1, emark2)
-    local localsub = sub_captures(sub, captures)
-    -- lua doesn't have a split function
-    local sublines = vim.fn.split(localsub, "\n")
-    local el1, ec1 = unpack(vim.api.nvim_buf_get_extmark_by_id(0, mark_ns, emark1, {}))
-    local el2, ec2 = unpack(vim.api.nvim_buf_get_extmark_by_id(0, mark_ns, emark2, {}))
-    local prefix = string.sub(vim.fn.getline(el1+1), 0, ec1)
-    local postfix = string.sub(vim.fn.getline(el2+1), ec2+1)
-    if el2 ~= el1 then
-      deletebufline(0, el1+2, el2+1)
-    end
-    if #sublines == 1 then
-      vim.fn.setline(el1+1, prefix..localsub..postfix)
-    else
-      vim.fn.setline(el1+1, prefix..sublines[1])
-      table.remove(sublines, 1)
-      sublines[#sublines] = sublines[#sublines]..suffix
-      vim.fn.append(el1+1, sublines)
-    end
+  local _, _, querystr, sub = string.find(args.args, "([^/]+)/(.*)")
+  if not string.find(querystr, "@match%f[%A]") then
+      querystr = querystr.." @match"
   end
-)
+  treesitter_do(querystr, args.line1, args.line2,
+    function(captures, mark_ns, emark1, emark2)
+      local localsub = sub_captures(sub, captures)
+      -- lua doesn't have a split function
+      local sublines = vim.fn.split(localsub, "\n")
+      local el1, ec1 = unpack(vim.api.nvim_buf_get_extmark_by_id(0, mark_ns, emark1, {}))
+      local el2, ec2 = unpack(vim.api.nvim_buf_get_extmark_by_id(0, mark_ns, emark2, {}))
+      local prefix = string.sub(vim.fn.getline(el1+1), 0, ec1)
+      local postfix = string.sub(vim.fn.getline(el2+1), ec2+1)
+      if el2 ~= el1 then
+        deletebufline(0, el1+2, el2+1)
+      end
+      if #sublines == 1 then
+        vim.fn.setline(el1+1, prefix..localsub..postfix)
+      else
+        vim.fn.setline(el1+1, prefix..sublines[1])
+        table.remove(sublines, 1)
+        sublines[#sublines] = sublines[#sublines]..suffix
+        vim.fn.append(el1+1, sublines)
+      end
+    end
+  )
 end
 
 local function treesitter_grep(args)
-local fullstr = args.args;
-local regex
-local regex_start, regex_end = string.find(fullstr, "/.*[^\\]/")
-if regex_start and regex_end then
-  regex = string.sub(fullstr, regex_start+1, regex_end-1)
-  fullstr = string.sub(fullstr, 0, regex_start-1) .. string.sub(fullstr, regex_end+1)
-end
-local querystr
-local querystr_start, querystr_end = string.find(fullstr, "%b()[@%w%d]*")
-if querystr_start and querystr_end then
-  querystr = string.sub(fullstr, querystr_start, querystr_end)
-  fullstr = string.sub(fullstr, 0, querystr_start-1) .. string.sub(fullstr, querystr_end+1)
-else
-  error "Failure parsing treesitter grep: Couldn't find treesitteer query"
-end
-if not string.find(querystr, "@match%f[%A]") then
-    querystr = querystr.." @match"
-end
-local matches = {};
-treesitter_do(querystr, args.line1, args.line2,
-  function(captures, mark_ns, emark1, emark2)
-    local el1, ec1 = unpack(vim.api.nvim_buf_get_extmark_by_id(0, mark_ns, emark1, {}))
-    local el2, ec2 = unpack(vim.api.nvim_buf_get_extmark_by_id(0, mark_ns, emark2, {}))
-    local lines = vim.fn.getline(el1+1, el2+1)
-    lines[1] = string.sub(lines[1], ec1)
-    lines[#lines] = string.sub(lines[#lines], 0, ec2+1)
-    local text = vim.fn.join(lines, "\n")
-    if not regex or vim.fn.match(text, regex) > -1 then
-      table.insert(matches, {
-          filename = vim.fn.expand('%'),
-          lnum = el1+1,
-          end_lnum = el2+1,
-          col = ec1,
-          end_col = ec2,
-          text = text,
-      })
-    end
+  local fullstr = args.args;
+  local regex
+  local regex_start, regex_end = string.find(fullstr, "/.*[^\\]/")
+  if regex_start and regex_end then
+    regex = string.sub(fullstr, regex_start+1, regex_end-1)
+    fullstr = string.sub(fullstr, 0, regex_start-1) .. string.sub(fullstr, regex_end+1)
   end
-)
-vim.fn.setqflist(matches)
-vim.cmd("copen")
+  local querystr
+  local querystr_start, querystr_end = string.find(fullstr, "%b()[@%w%d]*")
+  if querystr_start and querystr_end then
+    querystr = string.sub(fullstr, querystr_start, querystr_end)
+    fullstr = string.sub(fullstr, 0, querystr_start-1) .. string.sub(fullstr, querystr_end+1)
+  else
+    error "Failure parsing treesitter grep: Couldn't find treesitteer query"
+  end
+  if not string.find(querystr, "@match%f[%A]") then
+      querystr = querystr.." @match"
+  end
+  local matches = {};
+  treesitter_do(querystr, args.line1, args.line2,
+    function(captures, mark_ns, emark1, emark2)
+      local el1, ec1 = unpack(vim.api.nvim_buf_get_extmark_by_id(0, mark_ns, emark1, {}))
+      local el2, ec2 = unpack(vim.api.nvim_buf_get_extmark_by_id(0, mark_ns, emark2, {}))
+      local lines = vim.fn.getline(el1+1, el2+1)
+      lines[1] = string.sub(lines[1], ec1)
+      lines[#lines] = string.sub(lines[#lines], 0, ec2+1)
+      local text = vim.fn.join(lines, "\n")
+      if not regex or vim.fn.match(text, regex) > -1 then
+        table.insert(matches, {
+            filename = vim.fn.expand('%'),
+            lnum = el1+1,
+            end_lnum = el2+1,
+            col = ec1,
+            end_col = ec2,
+            text = text,
+        })
+      end
+    end
+  )
+  vim.fn.setqflist(matches)
+  vim.cmd("copen")
 end
 
 vim.api.nvim_create_user_command("TSGlobal", treesitter_ex,  { range='%', nargs=1 })
@@ -375,11 +375,11 @@ vim.api.nvim_create_user_command("TSGrep", treesitter_grep, { range='%', nargs=1
 -- preview code lsp actions
 local actions_preview = require('actions-preview')
 actions_preview.setup {
-backend = { 'telescope', 'nui' },
-telescope = require('telescope.themes').get_dropdown { winblend = 10 },
+  backend = { 'telescope', 'nui' },
+  telescope = require('telescope.themes').get_dropdown { winblend = 10 },
 }
 vim.api.nvim_create_user_command(
-'ActionsPreview', function() actions_preview.code_actions() end, { range='%', nargs=0 }
+  'ActionsPreview', function() actions_preview.code_actions() end, { range='%', nargs=0 }
 )
 
 -- refactoring stuff
