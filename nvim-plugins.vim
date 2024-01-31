@@ -68,7 +68,7 @@ nnoremap <silent> <M-d>B <cmd>lua require'dap'.set_breakpoint(vim.fn.input('Brea
 nnoremap <silent> <M-d>q <cmd>lua require'dap'.list_breakpoints(vim.fn.input('Breakpoint condition: '))<cr>
 nnoremap <silent> <M-d>r <cmd>lua require'dap'.repl.open()<cr>
 " refactoring
-Plug 'ThePrimeagen/refactoring.nvim'
+Plug 'ThePrimeagen/refactoring.nvim', { 'on': [ 'RefactoringExtractFunction', 'RefactoringExtractFunctionToFile', 'RefactoringExtractVariable', 'RefactoringInlineVariable', 'RefactoringExtractBlock', 'RefactoringExtractBlockToFile' ] }
 command! -range RefactoringExtractFunction lua require('refactoring').refactor('Extract Function')
 command! -range RefactoringExtractFunctionToFile lua require('refactoring').refactor('Extract Function To File')
 command! -range RefactoringExtractVariable lua require('refactoring').refactor('Extract Variable')
@@ -78,3 +78,5 @@ command! -range RefactoringExtractBlockToFile lua require('refactoring').refacto
 " dependency for preview actions
 Plug 'aznhe21/actions-preview.nvim'
 nnoremap  <leader>fd  <cmd>lua require('actions-preview').code_actions()<cr>
+" better startup times
+Plug 'lewis6991/impatient.nvim'

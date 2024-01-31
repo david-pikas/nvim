@@ -352,7 +352,8 @@ vim.api.nvim_create_user_command(
 )
 
 -- refactoring stuff
-require('refactoring').setup({})
+-- currently out commented because we want to lazily load this plugin. not sure if calling setup is needed
+-- require('refactoring').setup({})
 
 -- telescope stuff
 telescope = require('telescope')
@@ -379,4 +380,3 @@ telescope.load_extension('fzf')
 telescope.load_extension('ultisnips')
 telescope.load_extension('hoogle')
 telescope.load_extension('harpoon')
-telescope.load_extension('refactoring')
