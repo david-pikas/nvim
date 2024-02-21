@@ -53,7 +53,7 @@ endif
 menu PopUp.Go\ to\ &definition <C-]>
 
 function! LspMenu()
-  if luaeval('0 < #vim.lsp.buf_get_clients()')
+  if luaeval('0 < #vim.lsp.get_active_clients({ bufnr = 0 })')
     " add (lsp based) show definition
     noremenu PopUp.Show\ &information <cmd>lua vim.lsp.buf.hover()<cr>
     " add (lsp based) find references
@@ -62,8 +62,9 @@ function! LspMenu()
     noremenu PopUp.&Peek\ function\ definition <cmd>lua require('nvim-treesitter.textobjects.lsp_interop').peek_definition_code('@function.outer')<cr>
     " add (treesitter+lsp based) peek class
     noremenu PopUp.Peek\ class\ definition <cmd>lua require('nvim-treesitter.textobjects.lsp_interop').peek_definition_code('@class.outer')<cr>
-  elseif PopUpMenuExists("Show information")
-    " remove the menus
+  elseif PopUpMenuExists("Show information") && 
+        \ luaeval('"" == vim.api.nvim_win_get_config(0).relative')
+    " remove the lsp menus, unless we're in a floating window
     unmenu PopUp.Show\ &information
     unmenu PopUp.Find\ &references
     unmenu PopUp.&Peek\ function\ definition
