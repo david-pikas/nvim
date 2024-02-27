@@ -5,7 +5,7 @@ set runtimepath-=C:/Program\ Files\ (x86)/nvim/share/nvim
 let &packpath = &runtimepath
 source ~/.vim/vimrc
 " better startup times
-lua require('impatient')
+lua vim.loader.enable()
 " keep nvim from hanging on C-z on windows
 if has('win32') || has('win64')
   nmap <C-z> <Nop>

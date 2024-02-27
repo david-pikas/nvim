@@ -78,5 +78,3 @@ command! -range RefactoringExtractBlockToFile lua require('refactoring').refacto
 " dependency for preview actions
 Plug 'aznhe21/actions-preview.nvim'
 nnoremap  <leader>fd  <cmd>lua require('actions-preview').code_actions()<cr>
-" better startup times
-Plug 'lewis6991/impatient.nvim'

@@ -376,7 +376,3 @@ extensions = {
   }
 }
 })
-telescope.load_extension('fzf')
-telescope.load_extension('ultisnips')
-telescope.load_extension('hoogle')
-telescope.load_extension('harpoon')
