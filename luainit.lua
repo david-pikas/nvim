@@ -126,12 +126,14 @@ ensure_installed = {
   "lua",
   "perl",
   "python",
+  "query",
   "regex",
   "ruby",
   "rust",
   "tsx",
   "typescript",
-  "query",
+  "vim",
+  "vimdoc"
 },
 highlight = { enable = true },
 incremental_selection = {
