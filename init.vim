@@ -30,16 +30,16 @@ endif
 " highlight yanked text
 autocmd TextYankPost * silent! lua vim.highlight.on_yank { higroup='IncSearch', timeout=200 }
 
-nnoremap <leader>p<C-I> :TSTextobjectPeekDefinitionCode @
+nnoremap <leader>p<C-O> :TSTextobjectPeekDefinitionCode @
 
-nnoremap [<C-I> :TSTextobjectGotoPreviousStart @
-vnoremap [<C-I> :TSTextobjectGotoPreviousStart @
+nnoremap [<C-O> :TSTextobjectGotoPreviousStart @
+vnoremap [<C-O> :TSTextobjectGotoPreviousStart @
 
-nnoremap ]<C-I> :TSTextobjectGotoNextEnd @
-vnoremap ]<C-I> :TSTextobjectGotoNextEnd @
+nnoremap ]<C-O> :TSTextobjectGotoNextEnd @
+vnoremap ]<C-O> :TSTextobjectGotoNextEnd @
 
-onoremap i<C-I> :TSTextobjectSelect @
-vnoremap i<C-I> <Esc>:TSTextobjectSelect @
+onoremap i<C-O> :TSTextobjectSelect @
+vnoremap i<C-O> <Esc>:TSTextobjectSelect @
 
 function! PopUpMenuExists(name)
     return 0 < len(menu_get('PopUp')[0].submenus->filter({i,v -> get(v, "name") == a:name}))
@@ -97,8 +97,8 @@ augroup END
 augroup lsp
   autocmd!
   " set/unset tagfunc to lsp
-  autocmd LspAttach * set tagfunc=v:lua.vim.lsp.tagfunc
-  autocmd LspDetach * set tagfunc=
+  " autocmd LspAttach * set tagfunc=v:lua.vim.lsp.tagfunc
+  " autocmd LspDetach * set tagfunc=
   " add lsp menu items
   autocmd BufEnter,LspAttach,LspDetach * call LspMenu()
 augroup END

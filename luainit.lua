@@ -2,7 +2,7 @@
 local nvim_lsp = require('lspconfig')
 local lsp_util = require('lspconfig.util')
 local langs = {
-  hls = {},
+  -- hls = {},
   rust_analyzer = {
     settings = {
       ["rust-analyzer"] = {
@@ -11,18 +11,77 @@ local langs = {
     }
   },
   clangd = {},
-  texlab = {
-    settings = {
-      args = {"-pdf", "--shell-escape"}
-    }
-  },
-  erlangls = {},
+  -- texlab = {
+  --   settings = {
+  --     args = {"-pdf", "--shell-escape"}
+  --   }
+  -- },
+  -- erlangls = {},
   eslint = {},
   pylsp = {},
-  solargraph = { root_dir = lsp_util.root_pattern("Gemfile", ".git", ".svn", ".solargraph.yml") },
-  -- ruby_ls = { root_dir = lsp_util.root_pattern("Gemfile", ".git", ".svn") },
+  -- solargraph = { root_dir = lsp_util.root_pattern("Gemfile", ".git", ".svn", ".solargraph.yml") },
+  ruby_lsp = {
+    capabilities = {diagnostics = false},
+    root_dir = lsp_util.root_pattern("Gemfile", ".git", ".svn"),
+    init_options = { enabledFeatures = {diagnostics = false} }
+  },
   cmake = {},
+  vimls = {},
 }
+
+local custom_attach = function(client, bufnr_)
+  bufnr = 0
+  local function map(mode, key, value)
+    vim.keymap.set(mode,key,value,{noremap = true, silent = true, buffer = bufnr})
+  end
+  local function nmap(key, value) map('n', key, value) end
+  local function set_option(opt, val)
+    vim.api.nvim_buf_set_option(bufnr_, opt, val)
+  end
+  set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
+  nmap('gd', vim.lsp.buf.definition)
+  nmap('gD', vim.lsp.buf.type_definition)
+  nmap('gr', vim.lsp.buf.references)
+  nmap('gR', vim.lsp.buf.rename)
+  map('v', 'K', vim.lsp.buf.hover)
+  nmap('K',  vim.lsp.buf.hover)
+  nmap('ga', vim.lsp.buf.code_action)
+  nmap('=f', vim.lsp.buf.format)
+  nmap('].', vim.diagnostic.goto_next)
+  nmap('[.', vim.diagnostic.goto_prev)
+  nmap('<leader>i', function () vim.diagnostic.open_float(0, { scope = "line", padding="single" }) end)
+  nmap('<leader>d', vim.lsp.buf.code_action)
+  nmap('<leader>q', vim.diagnostic.setqflist)
+  -- https://old.reddit.com/r/neovim/comments/13wcqdr/disable_hintslsperrors_etc/
+  vim.api.nvim_create_user_command("LspDiagnosticEnable", function()
+      vim.diagnostic.config {
+          virtual_text = true,
+          underline    = true,
+          signs        = true,
+      }
+  end, { desc = "enable lsp diagnostics" })
+  vim.api.nvim_create_user_command("LspDiagnosticDisable", function()
+      vim.diagnostic.config {
+          virtual_text = false,
+          underline    = false,
+          signs        = false,
+      }
+  end, { desc = "disable lsp diagnostics" })
+  vim.api.nvim_create_user_command("LspDiagnosticToggle", function()
+      local config = vim.diagnostic.config
+      local vt = config().virtual_text
+      config {
+          virtual_text = not vt,
+          underline    = not vt,
+          signs        = not vt,
+      }
+  end, { desc = "toggle lsp diagnostics" })
+end
+
+for lang,opts in pairs(langs) do
+  opts.on_attach = custom_attach
+  nvim_lsp[lang].setup(opts)
+end
 
 -- debugger stuff
 local dap = require('dap')
@@ -78,123 +137,92 @@ dap.configurations.cpp = dap.configurations.c
 
 vim.g.dap_configs = dap.configurations
 
-local custom_attach = function(client, bufnr_)
-bufnr = 0
-local function map(mode, key, value)
-  vim.keymap.set(mode,key,value,{noremap = true, silent = true, buffer = bufnr})
-end
-local function nmap(key, value) map('n', key, value) end
-local function set_option(opt, val)
-  vim.api.nvim_buf_set_option(bufnr_, opt, val)
-end
-set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
-nmap('gd', vim.lsp.buf.definition)
-nmap('gd', vim.lsp.buf.definition)
-nmap('gd', vim.lsp.buf.definition)
-nmap('gd', vim.lsp.buf.definition)
-nmap('gd', vim.lsp.buf.definition)
-nmap('gd', vim.lsp.buf.definition)
-nmap('gD', vim.lsp.buf.type_definition)
-nmap('gr', vim.lsp.buf.references)
-nmap('gR', vim.lsp.buf.rename)
-map('v', 'K', vim.lsp.buf.hover)
-nmap('K',  vim.lsp.buf.hover)
-nmap('ga', vim.lsp.buf.code_action)
-nmap('=f', vim.lsp.buf.format)
-nmap('].', vim.diagnostic.goto_next)
-nmap('[.', vim.diagnostic.goto_prev)
-nmap('<leader>i', function () vim.diagnostic.open_float(0, { scope = "line", padding="single" }) end)
-nmap('<leader>d', vim.lsp.buf.code_action)
-nmap('<leader>q', vim.diagnostic.setqflist)
-end
-
-for lang,opts in pairs(langs) do
-nvim_lsp[lang].setup(opts)
-nvim_lsp[lang].setup { on_attach = custom_attach }
-end
-
 -- tree sitter stuff
-require'nvim-treesitter.configs'.setup {
-ensure_installed = {
-  "c",
-  "cpp",
-  "elixir",
-  "haskell",
-  "javascript",
-  "json",
-  "latex",
-  "lua",
-  "perl",
-  "python",
-  "query",
-  "regex",
-  "ruby",
-  "rust",
-  "tsx",
-  "typescript",
-  "vim",
-  "vimdoc"
-},
-highlight = { enable = true },
-incremental_selection = {
-  enable = true,
-  keymaps = {
-    init_selection = "<M-s>",
-    node_incremental = "<M-s>",
-    scope_incremental = "<M-a>",
-    node_decremental = "<M-d>",
+require('nvim-treesitter.configs').setup {
+  ensure_installed = {
+    "c",
+    "cmake",
+    "cpp",
+    "elixir",
+    "haskell",
+    "javascript",
+    "json",
+    "latex",
+    "lua",
+    "perl",
+    "python",
+    "query",
+    "regex",
+    "ruby",
+    "rust",
+    "tsx",
+    "typescript",
+    "vim",
+    "vimdoc"
   },
-},
-indent = {
-   enable = true,
-   disable = { "c", "cpp" }
-},
-textobjects = {
-  select = {
+  highlight = {
     enable = true,
-    lookahead = true,
+    disable = { "cmake" }
+  },
+  incremental_selection = {
+    enable = true,
     keymaps = {
-      ["af"] = "@function.outer",
-      ["if"] = "@function.inner",
-      ["ac"] = "@class.outer",
-      ["ic"] = "@class.inner",
+      init_selection = "<M-s>",
+      node_incremental = "<M-s>",
+      scope_incremental = "<M-a>",
+      node_decremental = "<M-d>",
     },
-    selection_modes = {
-      ['@function.outer'] = 'V',
-      ['@class.outer'] = 'V',
-    },
-    include_surrounding_whitespace = true,
   },
-  move = {
-    enable = true,
-    set_jumps = true,
-    goto_next_start = {
-      ["]]"] = "@function.outer",
-      ["]m"] = "@class.outer",
-    },
-    goto_next_end = {
-      ["]["] = "@function.outer",
-      ["]M"] = "@class.outer",
-    },
-    goto_previous_start = {
-      ["[["] = "@function.outer",
-      ["[m"] = "@class.outer",
-    },
-    goto_previous_end = {
-      ["[]"] = "@function.outer",
-      ["[M"] = "@class.outer",
-    }
+  indent = {
+     enable = true,
+     disable = { "c", "cpp", "cmake" }
   },
-  lsp_interop = {
-    enable = true,
-    peek_definition_code = {
-      ["<leader>pf"] = "@function.outer",
-      ["<leader>pc"] = "@class.outer",
-      ["<leader>ps"] = "@statement.outer",
-      ["<leader>pp"] = "@paramater.outer"
+  textobjects = {
+    select = {
+      enable = true,
+      lookahead = true,
+      keymaps = {
+        ["af"] = "@function.outer",
+        ["if"] = "@function.inner",
+        ["ac"] = "@class.outer",
+        ["ic"] = "@class.inner",
+      },
+      selection_modes = {
+        ['@function.outer'] = 'V',
+        ['@class.outer'] = 'V',
+      },
+      include_surrounding_whitespace = true,
+    },
+    move = {
+      enable = true,
+      set_jumps = true,
+      goto_next_start = {
+        ["]]"] = "@function.outer",
+        ["]m"] = "@class.outer",
+      },
+      goto_next_end = {
+        ["]["] = "@function.outer",
+        ["]M"] = "@class.outer",
+      },
+      goto_previous_start = {
+        ["[["] = "@function.outer",
+        ["[m"] = "@class.outer",
+      },
+      goto_previous_end = {
+        ["[]"] = "@function.outer",
+        ["[M"] = "@class.outer",
+      }
+    },
+    lsp_interop = {
+      enable = true,
+      peek_definition_code = {
+        ["<leader>pf"] = "@function.outer",
+        ["<leader>pc"] = "@class.outer",
+        ["<leader>ps"] = "@statement.outer",
+        ["<leader>pp"] = "@paramater.outer"
+      }
     }
   }
-}
 }
 
 local function treesitter_do(querystr, line1, line2, callback)
