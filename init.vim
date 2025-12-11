@@ -53,7 +53,7 @@ endif
 menu PopUp.Go\ to\ &definition <C-]>
 
 function! LspMenu()
-  if luaeval('0 < #vim.lsp.get_active_clients({ bufnr = 0 })')
+  if luaeval('0 < #vim.lsp.get_clients({ bufnr = 0 })')
     " add (lsp based) show definition
     noremenu PopUp.Show\ &information <cmd>lua vim.lsp.buf.hover()<cr>
     " add (lsp based) find references

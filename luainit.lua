@@ -1,5 +1,4 @@
 -- LSP stuff
-local nvim_lsp = require('lspconfig')
 local lsp_util = require('lspconfig.util')
 local langs = {
   -- hls = {},
@@ -80,7 +79,10 @@ end
 
 for lang,opts in pairs(langs) do
   opts.on_attach = custom_attach
-  nvim_lsp[lang].setup(opts)
+  if not lang == {} then
+    vim.lsp.config(lang, opts)
+  end
+  vim.lsp.enable(lang)
 end
 
 -- debugger stuff
