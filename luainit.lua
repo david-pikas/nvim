@@ -97,11 +97,11 @@ dap.adapters = {
       detached = false
     },
   },
-  cspy = {
-    id = 'cspy',
-    type = 'executable',
-    command = (vim.g.iarew_target or '') .. '/common/bin/cspybat.exe',
-  }
+  -- cspy = {
+  --   id = 'cspy',
+  --   type = 'executable',
+  --   command = (vim.g.iarew_target or '') .. '/common/bin/cspybat.exe',
+  -- }
 }
 
 dap.configurations.c = {
@@ -120,20 +120,20 @@ dap.configurations.c = {
     args = {},
     MIMode = 'lldb',
   },
-  {
-    name = 'Launch',
-    type = 'cspy',
-    request = 'launch',
-    program =  function()
-      if vim.g.cspy_program_exe then
-        vim.g.cspy_program_exe = vim.fn.input('Path to IAR target: ', vim.fn.getcwd() .. '/', 'file')
-      end
-      return vim.g.cspy_program_exe
-    end,
-    cwd = '${workspaceFolder}',
-    stopOnEntry = false,
-    args = vim.g.cspy_program_args
-  }
+  -- {
+  --   name = 'Launch',
+  --   type = 'cspy',
+  --   request = 'launch',
+  --   program =  function()
+  --     if vim.g.cspy_program_exe then
+  --       vim.g.cspy_program_exe = vim.fn.input('Path to IAR target: ', vim.fn.getcwd() .. '/', 'file')
+  --     end
+  --     return vim.g.cspy_program_exe
+  --   end,
+  --   cwd = '${workspaceFolder}',
+  --   stopOnEntry = false,
+  --   args = vim.g.cspy_program_args
+  -- }
 }
 dap.configurations.cpp = dap.configurations.c
 
