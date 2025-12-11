@@ -10,7 +10,7 @@ Plug 'glacambre/firenvim', { 'do': { _ -> firenvim#install(0) } }
 Plug 'nvim-telescope/telescope.nvim'
 nnoremap  <leader>ff <cmd>Telescope find_files<cr>
 nnoremap  <leader>fh <cmd>Telescope help_tags<cr>
-nnoremap  <leader><C-F> yiw<cmd>Telescope live_grep<cr><Esc>pi
+nnoremap  <leader><C-F> yiw<cmd>Telescope live_grep<cr><C-R>"
 nnoremap  <leader>fb <cmd>Telescope buffers<cr>
 nnoremap  <leader>ft <cmd>Telescope treesitter<cr>
 nnoremap  <leader>fT <cmd>Telescope tags<cr>
@@ -21,7 +21,6 @@ nnoremap  <leader>fs <cmd>Telescope lsp_document_symbols<cr>
 nnoremap  <leader>fS <cmd>Telescope lsp_workspace_symbols<cr>
 nnoremap  <leader>gd <cmd>Telescope lsp_definitions<cr>
 nnoremap  <leader>f. <cmd>Telescope diagnostics<cr>
-nnoremap  <leader>f: <cmd>Telescope command_history<cr>
 nnoremap  <leader>fq <cmd>Telescope quickfix<cr>
 nnoremap  <leader>fo <cmd>Telescope jumplist<cr>
 nnoremap  <leader>hf <cmd>Telescope harpoon marks<cr>
@@ -68,13 +67,12 @@ nnoremap <silent> <M-d>B <cmd>lua require'dap'.set_breakpoint(vim.fn.input('Brea
 nnoremap <silent> <M-d>q <cmd>lua require'dap'.list_breakpoints(vim.fn.input('Breakpoint condition: '))<cr>
 nnoremap <silent> <M-d>r <cmd>lua require'dap'.repl.open()<cr>
 " refactoring
-Plug 'ThePrimeagen/refactoring.nvim', { 'on': [ 'RefactoringExtractFunction', 'RefactoringExtractFunctionToFile', 'RefactoringExtractVariable', 'RefactoringInlineVariable', 'RefactoringExtractBlock', 'RefactoringExtractBlockToFile' ] }
-command! -range RefactoringExtractFunction lua require('refactoring').refactor('Extract Function')
-command! -range RefactoringExtractFunctionToFile lua require('refactoring').refactor('Extract Function To File')
-command! -range RefactoringExtractVariable lua require('refactoring').refactor('Extract Variable')
-command! -range RefactoringInlineVariable lua require('refactoring').refactor('Inline Variable')
-command! -range RefactoringExtractBlock lua require('refactoring').refactor('Extract Block')
-command! -range RefactoringExtractBlockToFile lua require('refactoring').refactor('Extract Block To File')
+Plug 'ThePrimeagen/refactoring.nvim'
+" Plug 'ThePrimeagen/refactoring.nvim', { 'on': 'Refactor' }
+" augroup refactor_loaded
+"   autocmd!
+"   autocmd! User refactoring.nvim lua require('refactoring').setup({})
+" augroup END
 " dependency for preview actions
 Plug 'aznhe21/actions-preview.nvim'
-nnoremap  <leader>fd  <cmd>lua require('actions-preview').code_actions()<cr>
+nnoremap <leader>fd <cmd>lua require('actions-preview').code_actions()<cr>
