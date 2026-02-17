@@ -1,7 +1,7 @@
 " LSP
 Plug 'neovim/nvim-lspconfig'
 " tree sitter
-Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+Plug 'nvim-treesitter/nvim-treesitter', { 'branch': 'master', 'do': ':TSUpdate'}
 " viewing tree sitter information
 Plug 'nvim-treesitter/playground'
 " firefox integration
