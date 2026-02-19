@@ -16,7 +16,7 @@ local langs = {
   --   }
   -- },
   -- erlangls = {},
-  eslint = {},
+  -- eslint = {},
   pylsp = {},
   -- solargraph = { root_dir = lsp_util.root_pattern("Gemfile", ".git", ".svn", ".solargraph.yml") },
   ruby_lsp = {
