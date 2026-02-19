@@ -29,14 +29,15 @@ local langs = {
   vimls = {},
 }
 
-local custom_attach = function(client, bufnr_)
-  bufnr = 0
+local custom_attach = function(args)
+  local bufnr = args.buf
+  local client = vim.lsp.get_client_by_id(args.data.client_id)
   local function map(mode, key, value)
-    vim.keymap.set(mode,key,value,{noremap = true, silent = true, buffer = bufnr})
+    vim.keymap.set(mode, key, value, {noremap = true, silent = true, buffer = bufnr})
   end
   local function nmap(key, value) map('n', key, value) end
   local function set_option(opt, val)
-    vim.api.nvim_buf_set_option(bufnr_, opt, val)
+    vim.api.nvim_buf_set_option(bufnr, opt, val)
   end
   set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
   nmap('gd', vim.lsp.buf.definition)
@@ -78,8 +79,12 @@ local custom_attach = function(client, bufnr_)
   end, { desc = "toggle lsp diagnostics" })
 end
 
+vim.api.nvim_create_autocmd('LspAttach', {
+  callback = custom_attach
+})
+
 for lang,opts in pairs(langs) do
-  opts.on_attach = custom_attach
+  -- opts.on_attach = custom_attach
   if not lang == {} then
     vim.lsp.config(lang, opts)
   end
