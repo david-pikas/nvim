@@ -27,6 +27,21 @@ if exists('g:started_by_firenvim')
   nmap <C-q> <C-w>
 endif
 
+" terminal mappings
+tnoremap <C-W>      <Nop>
+tnoremap <C-W>.     <C-W>
+tnoremap <C-W>:     <C-\><C-O>:
+tnoremap <C-W>h     <C-\><C-N><C-W>h
+tnoremap <C-W>j     <C-\><C-N><C-W>j
+tnoremap <C-W>k     <C-\><C-N><C-W>k
+tnoremap <C-W>l     <C-\><C-N><C-W>l
+tnoremap <C-W>t     <C-\><C-N><C-W>t
+tnoremap <C-W>b     <C-\><C-N><C-W>b
+tnoremap <C-W>gt    <C-\><C-N>gt
+tnoremap <C-W>gT    <C-\><C-N>gT
+tnoremap <C-W>w     <C-\><C-N><C-W>w
+tnoremap <C-W><C-W> <C-\><C-N><C-W><C-W>
+
 " highlight yanked text
 autocmd TextYankPost * silent! lua vim.highlight.on_yank { higroup='IncSearch', timeout=200 }
 
