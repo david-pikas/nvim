@@ -24,6 +24,7 @@ local langs = {
     root_dir = lsp_util.root_pattern("Gemfile", ".git", ".svn"),
     init_options = { enabledFeatures = {diagnostics = false} }
   },
+  ty = {},
   cmake = {},
   vimls = {},
 }
